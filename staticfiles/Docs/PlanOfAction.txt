@@ -1,4 +1,4 @@
-Sure! Here's a step-by-step roadmap for our Django Job Portal with REST API & Pydantic.
+Here's a step-by-step roadmap for our Django Job Portal with REST API & Pydantic.
 
 We'll focus on one step at a time, but this will give you a clear idea of the full journey.
 
@@ -56,3 +56,5 @@ Deploy using Render or Heroku
 Implement authentication for API endpoints
 Secure user passwords and sensitive data
 Optimize performance (caching, database indexing)
+Testing and UI enhancement
+add more functionality and features

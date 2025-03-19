@@ -24,13 +24,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-488!ptp#694m0wrk(@5rgsp5=+=!r3tkmb&+_leak=oh+!2&a5'
+# SECRET_KEY = 'django-insecure-488!ptp#694m0wrk(@5rgsp5=+=!r3tkmb&+_leak=oh+!2&a5'
+SECRET_KEY = os.getenv('SECRET_KEY', 'change-this-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = os.getenv("DEBUG", 'False') == "True"
-DEBUG = False
+# DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = os.getenv("DEBUG", "False").strip().lower() in ["1", "true"]
 
-ALLOWED_HOSTS = ["jobportal.onrender.com"]
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "jobportal-wdvt.onrender.com",
+]
+RENDER_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
 
 
 # Application definition
@@ -49,7 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware'
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -84,10 +94,9 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL', 'sqlite:///db.sqlite3')
+        default=os.getenv('DATABASE_URL', 'postgresql://user:password@hostname:5432/dbname')  # Replace 'port' with 5432
     )
 }
-
 # Set connection pooling (avoiding unexpected argument issue)
 DATABASES['default']['CONN_MAX_AGE'] = 600
 DATABASES['default']['CONN_HEALTH_CHECKS'] = True
@@ -153,7 +162,10 @@ REST_FRAMEWORK = {
     ]
 }
 
-CSRF_TRUSTED_ORIGINS = ["http://jobportal.onrender.com", "http://127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://jobportal-wdvt.onrender.com",
+    "http://127.0.0.1",
+]
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True

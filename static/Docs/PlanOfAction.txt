@@ -56,3 +56,5 @@ Deploy using Render or Heroku
 Implement authentication for API endpoints
 Secure user passwords and sensitive data
 Optimize performance (caching, database indexing)
+Testing and UI enhancement
+add more functionality and features
