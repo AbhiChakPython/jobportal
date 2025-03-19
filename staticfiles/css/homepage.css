@@ -1,0 +1,216 @@
+/* ==================== GLOBAL STYLES ==================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* =================== BODY STYLING FOR HOMEPAGE =================== */
+body.homepage {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+
+/* =================== NAVBAR =================== */
+
+#navbar-brand-text {
+    font-size: 30px;
+    font-weight: bold;
+    text-decoration: underline overline;
+    text-decoration-color: #fcbe03;
+    text-decoration-thickness: 3px;
+    color: white;
+    transition: color 0.3s ease, text-decoration 0.3s ease, text-shadow 0.3s ease;
+    cursor: pointer;
+    padding: 10px 15px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 5.5);
+}
+
+#navbar-brand-text:hover {
+    color: #fcbe03;
+    text-decoration-color: white;
+    text-shadow: 2px 2px 5px rgba(255, 255, 255. 0.8)
+}
+
+#offcanvasNavbarLabel {
+    font-size: 18px;
+    margin-right: 10px;
+    color: #fcbe03;
+    cursor: grabbing;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 5.5);
+    text-decoration: none;
+}
+
+#offcanvasNavbarLabel:hover {
+    color: #fcbe03;
+    text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.8);
+    text-decoration: underline solid white;
+    text-decoration-thickness: 1px;
+    transition: color 0.3s ease, text-shadow 0.3s ease, text-decoration 0.3s ease;
+}
+
+nav.navbar {
+    background: rgba(255, 255, 255, 0.03); /* Light transparent white */
+    backdrop-filter: blur(5px); /* Blur effect */
+    -webkit-backdrop-filter: blur(5px); /* For Safari support */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Optional: subtle border */
+}
+
+#navbar-links li a {  /* Using ID selector */
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+#navbar-links li a:hover {
+    color: #fcbe03;
+    text-shadow: 2px 2px 5px rgba(255, 255, 255, 0.8);
+    text-decoration: underline solid white;
+    text-decoration-thickness: 1px;
+    transition: color 0.3s ease, text-shadow 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* =================== HERO SECTION =================== */
+
+.hero-container {
+    display: flex;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+}
+
+.hero-title {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+}
+
+.hero-title:hover {
+    color: #fcbe03;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    text-decoration: underline double navy-blue;
+}
+
+.hero-subtitle {
+    font-size: 18px;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 5.5);
+    margin-bottom: 20px;
+    color: #fcbe03;
+}
+
+.browser-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease, text-shadow 0.3s ease, text-decoration 0.3s ease, transform 0.3s ease;;
+    margin-bottom: 0;
+}
+
+.browser-btn:hover {
+    background-color: #fcba03;
+    color: black;
+    text-decoration: underline solid black;
+    text-underline-color: black;
+    text-decoration-thickness: 1px;
+    transform: scale(1.1);
+}
+
+/* =================== Job Listing =================== */
+.job-listing-container {
+    padding: 10px 10%;
+}
+
+.job-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-decoration: underline double;
+    text-underline-offset: 3px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 5.5);
+
+}
+
+.job-list {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.job-card {
+    padding: 20px;
+    border: 1px solid grey;
+    border-radius: 18px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+
+    background: rgba(0, 0, 0, 0.05); /* Light transparent white */
+    backdrop-filter: blur(5px); /* Blur effect */
+    -webkit-backdrop-filter: blur(5px); /* For Safari support */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Optional: subtle border */
+
+}
+
+.job-card-title {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.job-card-location {
+    font-size: 14px;
+    color: #fff;
+}
+
+.job-apply-btn  {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.job-apply-btn:hover {
+    background-color: #fcba03;
+    color: black;
+    text-decoration: underline solid black;
+    text-underline-color: black;
+    text-decoration-thickness: 1px;
+    transition: color 0.3s ease, text-shadow 0.3s ease, text-decoration 0.3s ease;
+}
+
+/* =================== Main Content =================== */
+.main-content {
+    padding: 10px 10%;
+    text-align: center;
+}
+
+
+
+
+
+
+

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Portal - Edit Profile</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}">
+    <style>
+        body {
+            background-image: url("{% static 'images/profile.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="edit_profile_page">
+<div class="edit_profile_container mt-5">
+    <h1 class="text-center">Edit Profile</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="text-center mb-3">
+            <label for="profile_image" class="form-label">Profile Image: </label>
+            <input type="file" id="profile_image" name="profile_image" class="form-control">
+
+            {% if user.profile_image %}
+                <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile_image_preview mt-2">
+            {% else %}
+                <img src="{{ MEDIA_URL }}user_profile.png" class="profile_image_preview mt-2" alt="Profile Image">
+            {% endif %}
+
+            <div class="form-check mt-2">
+                <input type="checkbox" name="remove_profile_image" class="remove_profile_image" id="remove_profile_image">
+                <label for="remove_profile_image">Remove Profile Image</label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+    <br>
+    <form method="post" class="edit_profile_form">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email: </label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter updated email address"
+                   value="{{ user.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="location" class="form-label">Location: </label>
+            <input type="text" class="form-control" id="location" name="location" placeholder="Enter updated location"
+                   value="{{ user_profile.location }}">
+        </div>
+        <div class="mb-3">
+            <label for="phone_number" class="form-label">Phone Number:</label>
+            <input type="text" id="phone_number" name="phone_number" class="form-control"
+                   value="{{ user_profile.phone_number }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="skills" class="form-label">Skills:</label>
+            <input type="text" id="skills" name="skills" class="form-control" value="{{ user_profile.skills }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="experience" class="form-label">Experience (in years):</label>
+            <input type="number" id="experience" name="experience" class="form-control"
+                   value="{{ user_profile.experience }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="education" class="form-label">Education:</label>
+            <input type="text" id="education" name="education" class="form-control"
+                   value="{{ user_profile.education }}">
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

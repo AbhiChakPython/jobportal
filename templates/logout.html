@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logout Page</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/logout.css' %}">
+    <style>
+        body {
+            background-image: url("{% static 'images/logout1.png' %}");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+    </style>
+</head>
+<body class="logout-page">
+    <div class="logout-flex">
+        <h1 class="logout-title">Logout Confirmation</h1>
+        <form class="logout-form" action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn" value="logout" name="logout" id="logout">Yes, Log-out</button>
+            <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+        <p class="logout-text">Thank you for using our website.</p>
+        <p class="logout-text">Your session has been terminated.</p>
+        <p class="logout-text-click">You have been logged out. Please <a href="{% url 'home' %}"><strong>click-here</strong></a> to return to the home page.</p>
+    </div>
+</body>
+</html>
