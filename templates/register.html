@@ -95,7 +95,11 @@
                     <option value="RECRUITER">Recruiter</option>
                 </select>
             </div>
-
+            <div class="mb-3">
+                <label for="profile_image" class="form-label">Profile Picture</label>
+                <input type="file" id="profile_image" name="profile_image" class="form-control" accept="image/*">
+                <small class="text-muted">Optional. Leave blank if you don't want to upload.</small>
+            </div>
             <button type="submit" class="btn btn-primary w-100">Register</button>
 
             <p class="mt-3 text-center">Already have an account? <a href="{% url 'login' %}">Login here</a></p>

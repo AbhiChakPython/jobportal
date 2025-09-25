@@ -138,6 +138,9 @@ def register_view(request):
         if user.email:
             send_welcome_email_dev(user.username, user.email)
 
+        # Get uploaded profile picture (optional)
+        profile_image = request.FILES.get('profile_image', None)
+
         # Create user profile
         role = request.POST.get('role', 'JOB_SEEKER')
         profile = UserProfile.objects.create(
@@ -147,7 +150,8 @@ def register_view(request):
             skills=validated_data.skills,
             experience=validated_data.experience,
             education=validated_data.education,
-            role=role
+            role=role,
+            profile_image=profile_image  # ✅ add this
         )
 
         messages.success(request, "Registration successful")
