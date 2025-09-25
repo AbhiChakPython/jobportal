@@ -3,9 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Portal - UserProfile</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Job Portal - User Profile</title>
     {% load static %}
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/profile.css' %}">
     <style>
         body {
@@ -15,29 +19,101 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
+        .profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+        .profile-image img {
+            width: 160px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ddd;
+        }
+        .profile-actions a {
+            margin: 0.5rem;
+        }
     </style>
 </head>
 <body class="profile_page">
-<div class="profile-container mt-5">
-    <div class="profile_image">
-        <img src="{% static 'media/user_profile.png' %}" alt="Profile_image">
-    </div>
-    <div class="profile-card">
-        <h1>Welcome, {{ user.username }}</h1>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Location:</strong> {{ user.location }}</p>
-        <p><strong>Skills:</strong> {{ user.skills }}</p>
-        <p><strong>Experience:</strong> {{ user.experience }}</p>
+
+<div class="container profile-container mt-5">
+
+    <!-- Profile Image -->
+    <div class="profile-image text-center">
+        {% if user_profile.profile_image %}
+            <img src="{{ user_profile.profile_image.url }}" alt="Profile Image">
+        {% else %}
+            <img src="{% static 'images/user_profile.png' %}" alt="Default Profile Image">
+        {% endif %}
     </div>
 
-    <div class="profile_actions">
-        <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit Profile</a>
-        <a href="{% url 'logout_confirm' %}" class="btn btn-danger">Logout</a>
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Profile Details -->
+    <div class="profile-card mx-auto text-center">
+        <h2 class="mb-3">Welcome, {{ user.username }}</h2>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+        <p><strong>Location:</strong> {{ user_profile.location|default:"N/A" }}</p>
+        <p><strong>Phone:</strong> {{ user_profile.phone_number|default:"N/A" }}</p>
+        <p><strong>Skills:</strong> {{ user_profile.skills|default:"N/A" }}</p>
+        <p><strong>Experience:</strong> {{ user_profile.experience|default:"0" }} years</p>
+        <p><strong>Education:</strong> {{ user_profile.education|default:"N/A" }}</p>
+    </div>
+
+    <!-- Profile Actions -->
+    <div class="profile-actions text-center mt-4">
+
+        <a href="{% url 'home' %}" class="btn btn-success">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+
+        {% if user.is_superuser %}
+            <!-- Admin Buttons -->
+            <a href="{% url 'jobs' %}" class="btn btn-primary">
+                <i class="fa-solid fa-briefcase"></i> Manage Jobs
+            </a>
+            <a href="{% url 'manage_users' %}" class="btn btn-warning">
+                <i class="fa-solid fa-users"></i> Manage Users
+            </a>
+        {% elif user.userprofile.role == 'RECRUITER' %}
+            <!-- Recruiter Buttons -->
+            <a href="{% url 'create-job' %}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Post Job
+            </a>
+            <a href="{% url 'jobs' %}" class="btn btn-info">
+                <i class="fa-solid fa-briefcase"></i> My Jobs
+            </a>
+        {% elif user.userprofile.role == 'JOB_SEEKER' %}
+            <!-- Job Seeker Buttons -->
+            <a href="{% url 'jobs' %}" class="btn btn-info">
+                <i class="fa-solid fa-briefcase"></i> Browse Jobs
+            </a>
+        {% endif %}
+
+        <!-- Edit Profile and Logout always available -->
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+            <i class="fa-solid fa-pen"></i> Edit Profile
+        </a>
+        <a href="{% url 'logout_confirm' %}" class="btn btn-danger">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </a>
     </div>
 
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

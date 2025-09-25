@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <title>Job Portal - Login</title>
     {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
@@ -14,75 +14,92 @@
             background-repeat: no-repeat;
             background-position: center center;
             background-size: cover;
-            background-attachment: fixed;  /* Ensures the image stays fixed */
-            height: 100vh;  /* Makes sure body takes full viewport height */
-            width: 100vw;   /* Ensures full width */
+            background-attachment: fixed;
+            height: 100vh;
+            width: 100vw;
             margin: 0;
             padding: 0;
-            overflow: hidden;
         }
     </style>
 </head>
-<body class="login_page">
+<body class="login-page">
 
-<nav id="navbar-container" class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div id="navbar-content" class="container-fluid">
-        <a href="/" id="navbar-brand-text" class="navbar-brand">My Job Portal</a>
-        <div id="navbar-links" class="offcanvas-body">
-            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
-                <li class="nav-item"><a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
-                </li>
-            </ul>
-        </div>
-    </div><!-- end container div -->
-</nav> <!-- end nav -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+        <a href="{% url 'home' %}" class="navbar-brand">My Job Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</nav>
 
-<div class="login-container">
-    <div class="login-box">
-        <h2 class="login-title">Login</h2>
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+        <h2 class="text-center mb-4">Login</h2>
 
-        <div class="alert container">
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        </div>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert
+                    {% if message.tags == 'error' %}alert-danger
+                    {% elif message.tags == 'success' %}alert-success
+                    {% elif message.tags == 'warning' %}alert-warning
+                    {% else %}alert-info{% endif %} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-        <form class="login-form" action="{% url 'login' %}" method="POST">
+        <form action="{% url 'login' %}" method="POST" class="needs-validation" novalidate>
             {% csrf_token %}
-            <div class="login-form-group">
-                <label class="login-form-label" for="username"><i class="fa-solid fa-user" style="color: #FFD43B;"></i>
-                    Username</label>
-                <input class="login-form-input" type="text" id="username" name="username"
-                       placeholder="Enter Username here" required>
+            <div class="mb-3">
+                <label for="username" class="form-label">
+                    <i class="fa-solid fa-user text-warning"></i> Username
+                </label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required minlength="3" autocomplete="username">
             </div>
-            <div class="login-form-group">
-                <label class="login-form-label" for="password"><i class="fa-solid fa-key" style="color: #FFD43B;"></i>
-                    Password</label>
-                <input class="login-form-input" type="password" id="password" name="password"
-                       placeholder="Enter your password" required>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">
+                    <i class="fa-solid fa-key text-warning"></i> Password
+                </label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required minlength="6" autocomplete="current-password">
             </div>
-            <div class="remember-me-container">
-                <input type="checkbox" id="rememberMe" name="remember-me">
-                <label for="rememberMe"> Remember Me</label>
-                <a class="forgot-password" href="{% url 'password_reset' %}">Forgot Password?</a>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe" name="remember-me">
+                    <label class="form-check-label" for="rememberMe">Remember Me</label>
+                </div>
+                <a href="{% url 'password_reset' %}" class="text-decoration-none">Forgot Password?</a>
             </div>
-            <div class="login-form-group">
-                <button class="login-btn" type="submit"><i class="fa-solid fa-right-to-bracket"
-                                                           style="color: black;"></i> Login
-                </button>
-            </div>
-            <div class="login-register-link">
-                <p> Don't have an account? <a class="register-link" href="{% url 'register' %}">Register</a></p>
-            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mb-3">
+                <i class="fa-solid fa-right-to-bracket"></i> Login
+            </button>
+
+            <p class="text-center">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
         </form>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<script>
+    // Example client-side validation
+    (() => {
+        'use strict'
+        const forms = document.querySelectorAll('.needs-validation')
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
 </body>
 </html>

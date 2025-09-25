@@ -151,6 +151,7 @@ nav.navbar {
     padding: 20px;
     justify-content: center;
     flex-wrap: wrap;
+    color: #fff;
 }
 
 .job-card {

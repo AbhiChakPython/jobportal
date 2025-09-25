@@ -1,0 +1,75 @@
+###############################################################
+#### For Re-Deployment after made changes in local machine ####
+###############################################################
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'change-this-in-production')
+
+DEBUG = os.getenv("DEBUG", "False").strip().lower() in ["1", "true"]
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "jobportal-wdvt.onrender.com",
+]
+RENDER_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+
+MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+]
+
+ROOT_URLCONF = 'jobportal.urls'
+
+WSGI_APPLICATION = 'jobportal.wsgi.application'
+
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', 'postgresql://user:password@hostname:5432/dbname')  # Replace 'port' with 5432
+    )
+}
+# Set connection pooling (avoiding unexpected argument issue)
+DATABASES['default']['CONN_MAX_AGE'] = 600
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/day',
+    },
+}
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://jobportal-wdvt.onrender.com",
+    "http://127.0.0.1",
+]
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+--------------------------------------------------------------------------------
+# GIT codes for start production once made changes or updates are made #
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
+python manage.py collectstatic --noinput
+pip freeze > requirements.txt
+
+git add .
+git commit -m "Updated settings and added new feature X"
+git push origin feature-new-functionality
+git checkout main
+git pull origin main
+git merge feature-new-functionality
+git push origin main

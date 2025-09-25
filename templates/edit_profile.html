@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Portal - Edit Profile</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/edit_profile.css' %}">
     <style>
         body {
@@ -15,77 +15,106 @@
             background-repeat: no-repeat;
             background-attachment: fixed;
         }
+        .edit-profile-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 3rem;
+            max-width: 600px;
+        }
+        .profile-image-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
     </style>
 </head>
 <body class="edit_profile_page">
-<div class="edit_profile_container mt-5">
-    <h1 class="text-center">Edit Profile</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
 
-        <div class="text-center mb-3">
-            <label for="profile_image" class="form-label">Profile Image: </label>
-            <input type="file" id="profile_image" name="profile_image" class="form-control">
+<div class="container d-flex justify-content-center">
+    <div class="edit-profile-card w-100">
 
-            {% if user.profile_image %}
-                <img src="{{ user.profile_image.url }}" alt="Profile Image" class="profile_image_preview mt-2">
-            {% else %}
-                <img src="{{ MEDIA_URL }}user_profile.png" class="profile_image_preview mt-2" alt="Profile Image">
-            {% endif %}
+        <h2 class="text-center mb-4">Edit Profile</h2>
 
-            <div class="form-check mt-2">
-                <input type="checkbox" name="remove_profile_image" class="remove_profile_image" id="remove_profile_image">
-                <label for="remove_profile_image">Remove Profile Image</label>
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Profile Image -->
+            <div class="text-center mb-3">
+                <label for="profile_image" class="form-label">Profile Image:</label>
+                <input type="file" id="profile_image" name="profile_image" class="form-control mb-2">
+
+                {% if user_profile.profile_image %}
+                    <img src="{{ user_profile.profile_image.url }}" alt="Profile Image" class="profile-image-preview">
+                {% else %}
+                    <img src="{% static 'images/user_profile.png' %}" alt="Profile Image" class="profile-image-preview">
+                {% endif %}
+
+                <div class="form-check mt-2">
+                    <input type="checkbox" name="remove_image" class="form-check-input" id="remove_image">
+                    <label for="remove_image" class="form-check-label">Remove Profile Image</label>
+                </div>
             </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-        <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
-    </form>
-    <br>
-    <form method="post" class="edit_profile_form">
-        {% csrf_token %}
 
-        <div class="mb-3">
-            <label for="email" class="form-label">Email: </label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Enter updated email address"
-                   value="{{ user.email }}" required>
-        </div>
-        <div class="mb-3">
-            <label for="location" class="form-label">Location: </label>
-            <input type="text" class="form-control" id="location" name="location" placeholder="Enter updated location"
-                   value="{{ user_profile.location }}">
-        </div>
-        <div class="mb-3">
-            <label for="phone_number" class="form-label">Phone Number:</label>
-            <input type="text" id="phone_number" name="phone_number" class="form-control"
-                   value="{{ user_profile.phone_number }}">
+            <!-- User Details -->
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email"
+                       value="{{ user.email }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="location" class="form-label">Location:</label>
+                <input type="text" id="location" name="location" class="form-control"
+                       value="{{ user_profile.location }}">
+            </div>
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number:</label>
+                <input type="text" id="phone_number" name="phone_number" class="form-control"
+                       value="{{ user_profile.phone_number }}">
+            </div>
+            <div class="mb-3">
+                <label for="skills" class="form-label">Skills:</label>
+                <input type="text" id="skills" name="skills" class="form-control"
+                       value="{{ user_profile.skills }}">
+            </div>
+            <div class="mb-3">
+                <label for="experience" class="form-label">Experience (years):</label>
+                <input type="number" id="experience" name="experience" class="form-control"
+                       value="{{ user_profile.experience }}">
+            </div>
+            <div class="mb-3">
+                <label for="education" class="form-label">Education:</label>
+                <input type="text" id="education" name="education" class="form-control"
+                       value="{{ user_profile.education }}">
+            </div>
+
+            <!-- Form Actions -->
+            <div class="d-flex justify-content-between mb-3">
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+                <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+        <!-- Extra Navigation Buttons -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'home' %}" class="btn btn-outline-dark w-50 me-2">Back to Home</a>
+            <a href="{% url 'profile' %}" class="btn btn-outline-success w-50">Go to Profile</a>
         </div>
 
-        <div class="mb-3">
-            <label for="skills" class="form-label">Skills:</label>
-            <input type="text" id="skills" name="skills" class="form-control" value="{{ user_profile.skills }}">
-        </div>
-
-        <div class="mb-3">
-            <label for="experience" class="form-label">Experience (in years):</label>
-            <input type="number" id="experience" name="experience" class="form-control"
-                   value="{{ user_profile.experience }}">
-        </div>
-
-        <div class="mb-3">
-            <label for="education" class="form-label">Education:</label>
-            <input type="text" id="education" name="education" class="form-control"
-                   value="{{ user_profile.education }}">
-        </div>
-
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary">Update Profile</button>
-            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
-        </div>
-    </form>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

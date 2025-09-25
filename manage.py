@@ -5,8 +5,13 @@ import sys
 
 
 def main():
+    if 'DJANGO_ENV' in os.environ and os.environ['DJANGO_ENV'] == 'production':
+        settings_module = 'jobportal.settings.settings_prod'
+    else:
+        settings_module = 'jobportal.settings.settings_dev'
+
     """Run administrative tasks."""
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jobportal.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

@@ -1,0 +1,40 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.sqlite3
+
+# Virtual environment
+venv/
+env/
+
+# Django
+staticfiles/
+media/
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*
+!.env.example  # Optional: example file for reference
+
+# VSCode
+.vscode/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
+.coverage
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Docker (optional)
+*.dockerignore

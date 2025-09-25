@@ -1,0 +1,29 @@
+###############################################################
+#### For Re-Development, Enhancements and Testing Features ####
+###############################################################
+
+DEBUG = True
+
+ALLOWED_HOSTS = ["*"]
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    }
+}
+
+--------------------------------------------------------------------------------
+#GIT code to start developement once suspended deployment#
+
+git pull origin main
+git checkout -b feature-new-functionality
+pip install -r requirements.txt
+
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver
