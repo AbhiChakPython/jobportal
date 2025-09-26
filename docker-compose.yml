@@ -1,25 +1,34 @@
+version: '3.9'
+
 services:
+  # -----------------------------
+  # Postgres Database
+  # -----------------------------
   db:
-    image: postgres:16
-    container_name: jobportal_db_container
+    image: postgres:17
+    container_name: jobportal_db_prod
     restart: always
-    environment:
-      POSTGRES_DB: jobportal
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345@123
+    env_file:
+      - .env.prod
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "jobportal"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       retries: 5
+      start_period: 30s
 
+  # -----------------------------
+  # Redis (Broker / Cache)
+  # -----------------------------
   redis:
-    image: "redis:alpine"
-    container_name: jobportal_redis
+    image: redis:alpine
+    container_name: jobportal_redis_prod
     restart: always
+    env_file:
+      - .env.prod
     ports:
       - "6379:6379"
     healthcheck:
@@ -29,74 +38,75 @@ services:
       start_period: 30s
       timeout: 10s
 
+  # -----------------------------
+  # Django Web App
+  # -----------------------------
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: jobportal_web
+    container_name: jobportal_web_prod
     restart: always
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-    environment:
-      POSTGRES_DB: jobportal
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345@123
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+    env_file:
+      - .env.prod
     ports:
       - "8000:8000"
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn jobportal.wsgi:application --bind 0.0.0.0:8000 --workers 4
     volumes:
       - .:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
+  # -----------------------------
+  # Celery Worker
+  # -----------------------------
   celery:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: jobportal_celery
+    container_name: jobportal_celery_prod
     restart: always
     depends_on:
-      - web
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.prod
     command: celery -A jobportal worker -l info
     volumes:
       - .:/app
-    environment:
-      POSTGRES_DB: jobportal
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345@123
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
 
+  # -----------------------------
+  # Celery Beat Scheduler
+  # -----------------------------
   celery_beat:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: jobportal_celery_beat
+    container_name: jobportal_celery_beat_prod
     restart: always
     depends_on:
-      - redis
-      - db
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env.prod
     command: celery -A jobportal beat -l info
     volumes:
       - .:/app
-    environment:
-      POSTGRES_DB: jobportal
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345@123
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
 
+# -----------------------------
+# Named Volumes
+# -----------------------------
 volumes:
   postgres_data:

@@ -1,44 +1,40 @@
-from .settings import *  # Import base settings from settings.py
+from .settings import *
 from dotenv import load_dotenv
 import os
+import dj_database_url
 
+# Load development environment variables
+load_dotenv(BASE_DIR / '.env.dev')
 
-# Load environment variables from the corresponding .env file based on the environment
-load_dotenv('.env.dev')  # Explicitly load the development .env file
-# Development-specific settings
-DEBUG = True  # Enable debugging for development
+# Development-specific overrides
+DEBUG = True
 
+# Database (from DATABASE_URL)
+DATABASES = {
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+}
 
-# Local caching (Optional, only if you want Redis caching in development)
+# Local caching (in-memory for dev)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
-# Celery tasks will run immediately instead of sending to broker
+# Celery tasks run immediately in dev
 CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True  # propagate exceptions
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
 
-LOGIN_URL = '/auth/login/'  # matches your login_view path
-LOGIN_REDIRECT_URL = '/profile/'  # optional, default redirect after login
-
-# Optional: Local media settings, useful for development environment
+# Optional: Media settings for dev
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Use console email backend for dev
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@jobportal.com')
 
-# Use console email backend in development (emails printed to terminal)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@jobportal.com'
-
-# File logs: keep detailed
-LOGGING['handlers']['file']['level'] = 'DEBUG'
-
-# Console logs: reduce verbosity
-LOGGING['handlers']['console']['level'] = 'INFO'
-LOGGING['handlers']['console']['formatter'] = 'simple'
-
-# App-specific loggers
+# Logging overrides for development
+LOGGING['handlers']['file']['level'] = os.getenv('LOG_FILE_LEVEL', 'DEBUG')
 LOGGING['loggers']['django']['level'] = 'INFO'
 LOGGING['loggers']['users']['level'] = 'INFO'
