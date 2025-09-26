@@ -1,44 +1,33 @@
-from .settings import *  # Import base settings from settings.py
+from .settings import *
 from dotenv import load_dotenv
 import os
 
+# Load development environment variables
+load_dotenv(BASE_DIR / '.env.dev')
 
-# Load environment variables from the corresponding .env file based on the environment
-load_dotenv('.env.dev')  # Explicitly load the development .env file
-# Development-specific settings
-DEBUG = True  # Enable debugging for development
+# Development-specific overrides
+DEBUG = True
 
-
-# Local caching (Optional, only if you want Redis caching in development)
+# Local caching (in-memory for dev)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
 
-# Celery tasks will run immediately instead of sending to broker
+# Celery tasks run immediately in dev
 CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True  # propagate exceptions
+CELERY_TASK_EAGER_PROPAGATES = True
 
-LOGIN_URL = '/auth/login/'  # matches your login_view path
-LOGIN_REDIRECT_URL = '/profile/'  # optional, default redirect after login
-
-# Optional: Local media settings, useful for development environment
+# Optional: Media settings for dev
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-# Use console email backend in development (emails printed to terminal)
+# Use console email backend for dev (emails printed to terminal)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@jobportal.com'
 
-# File logs: keep detailed
+# Logging overrides for development
 LOGGING['handlers']['file']['level'] = 'DEBUG'
-
-# Console logs: reduce verbosity
-LOGGING['handlers']['console']['level'] = 'INFO'
-LOGGING['handlers']['console']['formatter'] = 'simple'
-
-# App-specific loggers
 LOGGING['loggers']['django']['level'] = 'INFO'
 LOGGING['loggers']['users']['level'] = 'INFO'

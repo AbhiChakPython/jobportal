@@ -1,22 +1,44 @@
-#Use official python image as base
-FROM python:3.13
+# -----------------------------
+# Base image
+# -----------------------------
+FROM python:3.13-slim
 
-#Set Environment Variables
+# -----------------------------
+# Environment variables
+# -----------------------------
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-#Set working directory inside the container
+# -----------------------------
+# Set working directory
+# -----------------------------
 WORKDIR /app
 
-#Copy requirements.txt and install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# -----------------------------
+# Install system dependencies
+# -----------------------------
+RUN apt-get update && \
+    apt-get install -y build-essential libpq-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-#Copy the entire project into the container
+# -----------------------------
+# Copy requirements and install
+# -----------------------------
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# -----------------------------
+# Copy project files
+# -----------------------------
 COPY . /app/
 
-# Expose the port Django runs on
+# -----------------------------
+# Expose port
+# -----------------------------
 EXPOSE 8000
 
-# Run Django development server
-CMD ["gunicorn", "jobportal.wsgi:application", "--bind", "0.0.0.0:8000"]
+# -----------------------------
+# Default command
+# -----------------------------
+CMD ["gunicorn", "jobportal.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]

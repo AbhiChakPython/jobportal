@@ -1,59 +1,55 @@
-import os
+from .settings import *
 from dotenv import load_dotenv
-from .settings import *  # Import base settings from settings.py
+import os
 
+# Load production environment variables
+load_dotenv(BASE_DIR / '.env.prod')
 
-# Load environment variables from the corresponding .env file based on the environment
-load_dotenv('.env.prod')  # Explicitly load the production .env file
+# Production-specific overrides
+DEBUG = False
 
-# Production-specific settings
-DEBUG = False  # Disable debugging in production
-
-
-# Caching with Redis (for production)
+# Caching with Redis in production
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://redis:6379/1',  # Redis container service
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-        },
+        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
+        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
     }
 }
 
-# Whitenoise for serving static files
+# Static files storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Secure Cookies & HTTPS in production
+# Security settings
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# Media settings (for production use)
+# Media settings
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # Ensure proper storage configuration
+MEDIA_ROOT = BASE_DIR / 'media'
 
-# Allow only specific hosts (e.g., production domain or Render)
+# Allowed hosts
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'your-production-domain.com').split(",")
 
-
+# Logging
 LOGGING['handlers']['file']['level'] = 'INFO'
 LOGGING['loggers']['django']['level'] = 'INFO'
 LOGGING['loggers']['users']['level'] = 'INFO'
 
-# Add email notifications for critical errors
+# Email for critical errors
 LOGGING['handlers']['mail_admins'] = {
     'level': 'ERROR',
     'class': 'django.utils.log.AdminEmailHandler',
     'include_html': True,
 }
-
 LOGGING['loggers']['django']['handlers'].append('mail_admins')
 LOGGING['loggers']['users']['handlers'].append('mail_admins')
 
-
+# Admins
 ADMINS = [('Admin Name', 'admin@example.com')]
 
+# Email backend for prod
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yourprovider.com'
 EMAIL_PORT = 587
