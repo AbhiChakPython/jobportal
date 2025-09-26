@@ -4,10 +4,19 @@ from dotenv import load_dotenv
 import dj_database_url
 from celery import Celery
 
+# ===============================
+# Base Directory
+# ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Load environment variables (will pick up correct .env from dev/prod settings)
-load_dotenv(BASE_DIR / '.env.dev')  # default dev, overridden in prod settings
+# ===============================
+# Load environment variables
+# ===============================
+# Default to dev; overridden in settings_prod.py
+env_file = BASE_DIR / '.env.dev'
+if os.getenv('ENV') == 'PROD':
+    env_file = BASE_DIR / '.env.prod'
+load_dotenv(env_file)
 
 # ===============================
 # Django Core Settings
@@ -87,13 +96,26 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 # ===============================
 # Database
 # ===============================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        ssl_require=os.getenv('DEBUG', 'False').lower() in ['false', '0', 'no']
-    )
-}
+# Prefer DATABASE_URL; fallback to POSTGRES_* if not set (Docker-friendly)
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=not DEBUG
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'jobportal_dev'),
+            'USER': os.getenv('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+            'HOST': os.getenv('POSTGRES_HOST', 'localhost'),
+            'PORT': os.getenv('POSTGRES_PORT', '5432'),
+        }
+    }
 
 # ===============================
 # Password Validators
@@ -175,8 +197,8 @@ app = Celery('jobportal')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-CELERY_BROKER_URL = os.environ.get('REDIS_URL')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/0')
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

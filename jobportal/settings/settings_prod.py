@@ -1,6 +1,7 @@
 from .settings import *
 from dotenv import load_dotenv
 import os
+import dj_database_url
 
 # Load production environment variables
 load_dotenv(BASE_DIR / '.env.prod')
@@ -8,14 +9,23 @@ load_dotenv(BASE_DIR / '.env.prod')
 # Production-specific overrides
 DEBUG = False
 
-# Caching with Redis in production
+# Database (supports DATABASE_URL or individual POSTGRES_* variables)
+DATABASES = {
+    'default': dj_database_url.config(
+        default=f"postgres://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@"
+                f"{os.getenv('POSTGRES_HOST')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+    )
+}
+
+# Caching with Redis
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
+        'LOCATION': os.getenv('REDIS_URL', 'redis://redis:6379/1'),
         'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
     }
 }
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
 
 # Static files storage
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -30,14 +40,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Allowed hosts
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'your-production-domain.com').split(",")
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(",")
 
 # Logging
 LOGGING['handlers']['file']['level'] = 'INFO'
 LOGGING['loggers']['django']['level'] = 'INFO'
 LOGGING['loggers']['users']['level'] = 'INFO'
-
-# Email for critical errors
 LOGGING['handlers']['mail_admins'] = {
     'level': 'ERROR',
     'class': 'django.utils.log.AdminEmailHandler',
@@ -49,11 +57,11 @@ LOGGING['loggers']['users']['handlers'].append('mail_admins')
 # Admins
 ADMINS = [('Admin Name', 'admin@example.com')]
 
-# Email backend for prod
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yourprovider.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# Email backend
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.yourprovider.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')

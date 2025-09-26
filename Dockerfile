@@ -8,6 +8,7 @@ FROM python:3.13-slim
 # -----------------------------
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV ENV=PROD
 
 # -----------------------------
 # Set working directory
@@ -18,7 +19,7 @@ WORKDIR /app
 # Install system dependencies
 # -----------------------------
 RUN apt-get update && \
-    apt-get install -y build-essential libpq-dev && \
+    apt-get install -y build-essential libpq-dev curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # -----------------------------
@@ -34,9 +35,19 @@ RUN pip install --upgrade pip && \
 COPY . /app/
 
 # -----------------------------
+# Collect static files
+# -----------------------------
+RUN python manage.py collectstatic --noinput
+
+# -----------------------------
 # Expose port
 # -----------------------------
 EXPOSE 8000
+
+# -----------------------------
+# Healthcheck
+# -----------------------------
+HEALTHCHECK --interval=30s --timeout=5s CMD curl -f http://localhost:8000/ || exit 1
 
 # -----------------------------
 # Default command

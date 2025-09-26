@@ -59,6 +59,11 @@ services:
     command: gunicorn jobportal.wsgi:application --bind 0.0.0.0:8000 --workers 4
     volumes:
       - .:/app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   # -----------------------------
   # Celery Worker
@@ -70,9 +75,10 @@ services:
     container_name: jobportal_celery_prod
     restart: always
     depends_on:
-      - web
-      - redis
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - .env.prod
     command: celery -A jobportal worker -l info
@@ -89,9 +95,10 @@ services:
     container_name: jobportal_celery_beat_prod
     restart: always
     depends_on:
-      - redis
-      - db
-      - web
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - .env.prod
     command: celery -A jobportal beat -l info
