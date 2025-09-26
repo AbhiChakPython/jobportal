@@ -1,16 +1,19 @@
 import os
-from dotenv import load_dotenv
-from celery import Celery
 from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
+from celery import Celery
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-load_dotenv(BASE_DIR / '.env.dev')
 
-# Base settings (common for both dev and prod)
+# Load environment variables (will pick up correct .env from dev/prod settings)
+load_dotenv(BASE_DIR / '.env.dev')  # default dev, overridden in prod settings
 
+# ===============================
+# Django Core Settings
+# ===============================
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
-DEBUG = False  # Default to False, will be overwritten in dev/prod-specific settings
-
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 CSRF_TRUSTED_ORIGINS = [
@@ -22,6 +25,9 @@ LOGIN_URL = '/api/auth/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+# ===============================
+# Installed Apps
+# ===============================
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -29,20 +35,24 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',  # Custom Apps
+    'users',
     'rest_framework',
     'rest_framework.authtoken',
     'django_redis',
     'whitenoise',
-    "widget_tweaks",
+    'widget_tweaks',
+    'guardian',
 ]
-INSTALLED_APPS += ['guardian']
+
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',  # default
+    'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
 )
 ANONYMOUS_USER_NAME = 'anonymous'
 
+# ===============================
+# Middleware
+# ===============================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -74,19 +84,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'jobportal.wsgi.application'
 
-# Default database configuration; will be overridden in dev/prod-specific files
+# ===============================
+# Database
+# ===============================
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB'),
-        'USER': os.getenv('POSTGRES_USER'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': os.getenv('POSTGRES_HOST'),
-        'PORT': os.getenv('POSTGRES_PORT'),
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=os.getenv('DEBUG', 'False').lower() in ['false', '0', 'no']
+    )
 }
 
-# Add common configurations for authentication, security, etc.
+# ===============================
+# Password Validators
+# ===============================
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -94,11 +105,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ===============================
+# Internationalization
+# ===============================
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# ===============================
+# Static & Media
+# ===============================
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -109,79 +126,57 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# ===============================
+# Logging
+# ===============================
 LOG_DIR = BASE_DIR / 'logs'
-LOG_DIR.mkdir(exist_ok=True)  # Ensure the logs folder exists
+LOG_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '[{levelname}] {asctime} {name} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '[{levelname}] {message}',
-            'style': '{',
-        },
+        'verbose': {'format': '[{levelname}] {asctime} {name} {module} {message}', 'style': '{'},
+        'simple': {'format': '[{levelname}] {message}', 'style': '{'},
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': LOG_DIR / 'jobportal.log',
-            'formatter': 'verbose',
-            'level': 'INFO',
-        },
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+        'file': {'class': 'logging.FileHandler', 'filename': LOG_DIR / 'jobportal.log', 'formatter': 'verbose', 'level': 'INFO'},
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'users': {  # Custom app logger
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
+        'django': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': True},
+        'users': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': False},
     },
 }
 
-
+# ===============================
+# REST Framework
+# ===============================
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
-
     'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',   # unauthenticated users
-        'rest_framework.throttling.UserRateThrottle',   # authenticated users
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
         'rest_framework.throttling.ScopedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '10/minute',   # 10 requests per minute for anonymous users
-        'user': '100/minute',  # 100 requests per minute for logged-in users
+        'anon': '10/minute',
+        'user': '100/minute',
         'login': '5/minute',
         'jobs_list': '50/minute',
     }
 }
 
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'jobportal.settings')
+# ===============================
+# Celery Configuration
+# ===============================
 app = Celery('jobportal')
-# Load settings from Django settings, using CELERY_ namespace
 app.config_from_object('django.conf:settings', namespace='CELERY')
-# Auto-discover tasks from installed apps
 app.autodiscover_tasks()
 
-
-# Redis as broker
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_BROKER_URL = os.environ.get('REDIS_URL')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL')
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
