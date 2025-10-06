@@ -1,0 +1,26 @@
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex ff0f48a..f7782e1 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -7,7 +7,7 @@[m [m__pycache__/[m
+ [m
+ # Virtual environment[m
+ venv/[m
+[31m-env/[m
+[32m+[m[32m#env/[m
+ [m
+ # Django[m
+ staticfiles/[m
+[36m@@ -16,9 +16,9 @@[m [mlogs/[m
+ *.log[m
+ [m
+ # Environment variables[m
+[31m-.env[m
+[31m-.env.*[m
+[31m-!.env.example  # Optional: example file for reference[m
+[32m+[m[32m#.env[m
+[32m+[m[32m#.env.*[m
+[32m+[m[32m#!.env.example  # Optional: example file for reference[m
+ [m
+ # VSCode[m
+ .vscode/[m
