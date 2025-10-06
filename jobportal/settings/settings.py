@@ -91,7 +91,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=os.getenv('DEBUG', 'False').lower() in ['false', '0', 'no']
+        ssl_require=False  # Force no SSL
     )
 }
 

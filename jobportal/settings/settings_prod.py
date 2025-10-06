@@ -1,59 +1,194 @@
-from .settings import *
-from dotenv import load_dotenv
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
+from celery import Celery
 
-# Load production environment variables
-load_dotenv(BASE_DIR / '.env.prod')
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Production-specific overrides
-DEBUG = False
+# ===============================
+# Load environment variables
+# ===============================
+ENV_FILE = '.env.prod' if os.getenv('DJANGO_ENV') == 'prod' else '.env.dev'
+load_dotenv(BASE_DIR / ENV_FILE)
 
-# Caching with Redis in production
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://redis:6379/1'),
-        'OPTIONS': {'CLIENT_CLASS': 'django_redis.client.DefaultClient'},
-    }
+# ===============================
+# Core Django Settings
+# ===============================
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]
+]
+CSRF_TRUSTED_ORIGINS.append("http://127.0.0.1")
+
+LOGIN_URL = '/api/auth/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# ===============================
+# Installed Apps
+# ===============================
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'users',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django_redis',
+    'whitenoise',
+    'widget_tweaks',
+    'guardian',
+]
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
+)
+ANONYMOUS_USER_NAME = 'anonymous'
+
+# ===============================
+# Middleware
+# ===============================
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'jobportal.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'jobportal.wsgi.application'
+
+# ===============================
+# Database (adaptive for dev/prod)
+# ===============================
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
+        ssl_require=os.getenv('DB_SSL_REQUIRE', 'False').lower() in ['true', '1', 'yes']
+    )
 }
 
-# Static files storage
+# ===============================
+# Password Validators
+# ===============================
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# ===============================
+# Internationalization
+# ===============================
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
+
+# ===============================
+# Static & Media
+# ===============================
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Security settings
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-
-# Media settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Allowed hosts
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'your-production-domain.com').split(",")
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ===============================
 # Logging
-LOGGING['handlers']['file']['level'] = 'INFO'
-LOGGING['loggers']['django']['level'] = 'INFO'
-LOGGING['loggers']['users']['level'] = 'INFO'
+# ===============================
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
 
-# Email for critical errors
-LOGGING['handlers']['mail_admins'] = {
-    'level': 'ERROR',
-    'class': 'django.utils.log.AdminEmailHandler',
-    'include_html': True,
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {'format': '[{levelname}] {asctime} {name} {module} {message}', 'style': '{'},
+        'simple': {'format': '[{levelname}] {message}', 'style': '{'},
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+        'file': {'class': 'logging.FileHandler', 'filename': LOG_DIR / 'jobportal.log', 'formatter': 'verbose', 'level': 'INFO'},
+    },
+    'loggers': {
+        'django': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': True},
+        'users': {'handlers': ['console', 'file'], 'level': 'INFO', 'propagate': False},
+    },
 }
-LOGGING['loggers']['django']['handlers'].append('mail_admins')
-LOGGING['loggers']['users']['handlers'].append('mail_admins')
 
-# Admins
-ADMINS = [('Admin Name', 'admin@example.com')]
+# ===============================
+# REST Framework
+# ===============================
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.ScopedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10/minute',
+        'user': '100/minute',
+        'login': '5/minute',
+        'jobs_list': '50/minute',
+    }
+}
 
-# Email backend for prod
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yourprovider.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+# ===============================
+# Celery Configuration
+# ===============================
+app = Celery('jobportal')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+CELERY_BROKER_URL = os.getenv('REDIS_URL')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL')
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'
+
+# ===============================
+# Security Settings
+# ===============================
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False').lower() in ['true', '1', 'yes']
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() in ['true', '1', 'yes']
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() in ['true', '1', 'yes']
