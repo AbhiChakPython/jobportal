@@ -7,7 +7,7 @@ __pycache__/
 
 # Virtual environment
 venv/
-#env/
+env/
 
 # Django
 staticfiles/
@@ -16,9 +16,9 @@ logs/
 *.log
 
 # Environment variables
-#.env
-#.env.*
-#!.env.example  # Optional: example file for reference
+.env
+.env.*
+!.env.example  # Optional: example file for reference
 
 # VSCode
 .vscode/
