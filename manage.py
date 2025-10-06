@@ -5,7 +5,7 @@ import sys
 
 
 def main():
-    if 'DJANGO_ENV' in os.environ and os.environ['DJANGO_ENV'] == 'production':
+    if os.environ.get('DJANGO_ENV') == 'prod':
         settings_module = 'jobportal.settings.settings_prod'
     else:
         settings_module = 'jobportal.settings.settings_dev'
