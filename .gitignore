@@ -19,7 +19,7 @@ logs/
 .env
 .env.*
 *.env
-!.env.example  # Optional: example file for reference
+!.env.example
 
 # VSCode
 .vscode/
