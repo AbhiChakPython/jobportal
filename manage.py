@@ -5,13 +5,17 @@ import sys
 
 
 def main():
-    if os.environ.get('DJANGO_ENV') == 'prod':
+    """Run administrative tasks."""
+    # Determine environment: default to 'dev'
+    django_env = os.environ.get('DJANGO_ENV', 'dev').lower()
+
+    if django_env == 'prod':
         settings_module = 'jobportal.settings.settings_prod'
     else:
         settings_module = 'jobportal.settings.settings_dev'
 
-    """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -20,6 +24,7 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+
     execute_from_command_line(sys.argv)
 
 

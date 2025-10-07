@@ -4,17 +4,24 @@ from dotenv import load_dotenv
 import dj_database_url
 from celery import Celery
 
+# ===============================
+# Base Paths & Environment
+# ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+django_env = os.getenv('DJANGO_ENV', 'dev').lower()
 
-# Load environment variables (will pick up correct .env from dev/prod settings)
-load_dotenv(BASE_DIR / '.env.dev')  # default dev, overridden in prod settings
+if django_env == 'dev':
+    load_dotenv(BASE_DIR / '.env.dev')
 
 # ===============================
 # Django Core Settings
 # ===============================
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 CSRF_TRUSTED_ORIGINS = [
     f"https://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]
@@ -91,7 +98,7 @@ DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=False  # Force no SSL
+        ssl_require=os.getenv('DB_SSL_REQUIRED', 'True').lower() in ['true', '1']
     )
 }
 

@@ -1,23 +1,32 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 import dj_database_url
+from dotenv import load_dotenv
 from celery import Celery
 
+# ===============================
+# Base Directory
+# ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # ===============================
 # Load environment variables
 # ===============================
-ENV_FILE = '.env.prod' if os.getenv('DJANGO_ENV') == 'prod' else '.env.dev'
-load_dotenv(BASE_DIR / ENV_FILE)
+# Optional local loading for dev/testing
+if os.getenv('DJANGO_ENV', 'prod') != 'prod':
+    load_dotenv(BASE_DIR / '.env.prod')
 
 # ===============================
 # Core Django Settings
 # ===============================
-SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+SECRET_KEY = os.getenv('SECRET_KEY')
+if not SECRET_KEY:
+    raise ValueError("Missing SECRET_KEY in production environment!")
+
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# ALLOWED_HOSTS: include localhost, 127.0.0.1, 0.0.0.0, and optionally live domain
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,0.0.0.0").split(",")
 
 CSRF_TRUSTED_ORIGINS = [
     f"https://{host}" for host in ALLOWED_HOSTS if host not in ["localhost", "127.0.0.1"]
@@ -88,13 +97,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'jobportal.wsgi.application'
 
 # ===============================
-# Database (adaptive for dev/prod)
+# Database
 # ===============================
 DATABASES = {
     'default': dj_database_url.config(
         default=os.getenv('DATABASE_URL'),
         conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
-        ssl_require=os.getenv('DB_SSL_REQUIRE', 'False').lower() in ['true', '1', 'yes']
+        ssl_require=os.getenv('DB_SSL_REQUIRED', 'False').lower() in ['true', '1', 'yes']
     )
 }
 
