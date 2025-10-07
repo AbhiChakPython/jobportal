@@ -18,6 +18,7 @@ logs/
 # Environment variables
 .env
 .env.*
+*.env
 !.env.example  # Optional: example file for reference
 
 # VSCode

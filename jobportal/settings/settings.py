@@ -12,6 +12,8 @@ django_env = os.getenv('DJANGO_ENV', 'dev').lower()
 
 if django_env == 'dev':
     load_dotenv(BASE_DIR / '.env.dev')
+elif django_env == 'prod':
+    load_dotenv(BASE_DIR / '.env.prod')
 
 # ===============================
 # Django Core Settings
@@ -96,9 +98,9 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 # ===============================
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=os.getenv('DATABASE_URL'),
         conn_max_age=600,
-        ssl_require=os.getenv('DB_SSL_REQUIRED', 'True').lower() in ['true', '1']
+        ssl_require=True
     )
 }
 
