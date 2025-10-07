@@ -13,14 +13,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Load environment variables
 # ===============================
 # Optional local loading for dev/testing
+# On Railway, the platform provides environment variables; local .env files are for development/testing.
 if os.getenv('DJANGO_ENV', 'prod') != 'prod':
+    # Load development .env file if not in production
+    load_dotenv(BASE_DIR / '.env.dev')
+else:
+    # If running locally in "prod" mode (rare), load .env.prod.
+    # In Railway deployment, this line does nothing, as Railway provides variables directly.
     load_dotenv(BASE_DIR / '.env.prod')
+
 
 # ===============================
 # Core Django Settings
 # ===============================
 SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY:
+    # This is a good, required check for a production environment.
     raise ValueError("Missing SECRET_KEY in production environment!")
 
 DEBUG = os.getenv('DEBUG', 'False').lower() in ['true', '1', 'yes']
@@ -97,15 +105,35 @@ TEMPLATES = [
 WSGI_APPLICATION = 'jobportal.wsgi.application'
 
 # ===============================
-# Database
+# Database (CRITICALLY CORRECTED SECTION)
 # ===============================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
-        ssl_require=os.getenv('DB_SSL_REQUIRED', 'False').lower() in ['true', '1', 'yes']
+# Check for DATABASE_URL; if present, use it via dj_database_url's built-in ENV lookup.
+# If not present, default to SQLite for local development/testing.
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            # NOTE: We do NOT use 'default=os.getenv(...)'.
+            # dj_database_url automatically finds DATABASE_URL in os.environ
+            # when the 'default' parameter is omitted. This is the most robust method.
+            conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
+            ssl_require=os.getenv('DB_SSL_REQUIRED', 'False').lower() in ['true', '1', 'yes']
+        )
+    }
+else:
+    # Local fallback for when DATABASE_URL is not set (i.e., local development)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+# Ensure the database configuration has an ENGINE set (a final safety check)
+if 'ENGINE' not in DATABASES['default']:
+    raise ValueError(
+        "Database engine could not be configured. Check DATABASE_URL and required packages."
     )
-}
+
 
 # ===============================
 # Password Validators

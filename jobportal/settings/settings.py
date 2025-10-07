@@ -96,13 +96,26 @@ WSGI_APPLICATION = 'jobportal.wsgi.application'
 # ===============================
 # Database
 # ===============================
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL'),
-        conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
-        ssl_require=os.getenv('DB_SSL_REQUIRED', 'False').lower() in ['true', '1', 'yes']
-    )
-}
+
+# --- Production/Environment Variable Check ---
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            # CRITICAL: Do not pass a 'default' value here.
+            # dj_database_url will automatically look for DATABASE_URL in the environment.
+            conn_max_age=int(os.getenv('DB_CONN_MAX_AGE', 600)),
+            ssl_require=os.getenv('DB_SSL_REQUIRED', 'False').lower() in ['true', '1', 'yes']
+        )
+    }
+# --- Local Development Fallback (Optional, but good practice) ---
+else:
+    # If DATABASE_URL is not set, use SQLite for local development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ===============================
 # Password Validators
